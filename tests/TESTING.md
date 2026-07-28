@@ -38,6 +38,10 @@ Playwright tests live in `tests/playwright/` and run against the full web stack.
 
 The dev stack (`./podman-setup.sh` in the project root) must be running first.
 
+> **Important:** all Playwright commands must be run from the `tests/playwright/` directory.
+> Running `npx playwright test` from the project root will silently pick up the wrong
+> `playwright` package and fail with confusing version-mismatch errors.
+
 ```shell
 cd tests/playwright
 npm install

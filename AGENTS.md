@@ -30,11 +30,12 @@ podman exec -it open-audit-community-test-web composer test:integration
 # All PHP tests
 podman exec -it open-audit-community-test-web composer test
 
-# Playwright acceptance tests (dev stack must be running)
+# Playwright acceptance tests — must cd into tests/playwright first
 cd tests/playwright
 npm install
 npx playwright install chromium
 npx playwright test
+# Running from the project root picks up the wrong package and fails
 ```
 
 See `tests/TESTING.md` for details.
