@@ -46,6 +46,10 @@ RUN echo "Configuring application" \
     && echo "Adding cron tasks" \
     && echo "* * * * *	root	php /usr/local/open-audit/public/index.php tasks execute >/dev/null 2>&1" > /etc/cron.d/open-audit
 
+# Apache ships a built-in Alias for /icons/ pointing to its own FancyIndex icons.
+# Remove it so requests to /icons/* reach the app's public/icons/ via DocumentRoot.
+RUN sed -i '/Alias \/icons\//d' /etc/apache2/mods-available/alias.conf
+
 ENV PHP_INI_SCAN_DIR=":/usr/local/open-audit/.compose/web/php/ini"
 
 COPY --from=docker.io/composer:latest /usr/bin/composer /usr/bin/composer

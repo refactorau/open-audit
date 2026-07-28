@@ -1,0 +1,3 @@
+[Network]
+NetworkName=open-audit-community-network
+Driver=bridge

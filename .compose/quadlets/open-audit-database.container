@@ -1,0 +1,21 @@
+[Unit]
+Description=Open-AudIT Database
+After=network-online.target
+
+[Container]
+Image=opmantek/open-audit-community-database:latest
+ContainerName=open-audit-community-database
+Environment=MARIADB_DATABASE=openaudit
+Environment=MARIADB_ROOT_PASSWORD=openauditrootuserpassword
+Environment=MARIADB_USER=openaudit
+Environment=MARIADB_PASSWORD=openauditpassword
+Volume=open-audit-database.volume:/var/lib/mysql
+PublishPort=33067:3306
+Network=open-audit.network
+StopTimeout=20
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

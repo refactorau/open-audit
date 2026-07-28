@@ -71,3 +71,27 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 ## License
 
 This project is licensed under the aGPL License - see the [AGPL 3.0](agpl-3.0.txt) file for details
+
+## Container Install (Podman)
+
+The quickest way to get Open-AudIT running locally is via the included setup script, which requires [Podman](https://podman.io/docs/installation) and [podman-compose](https://github.com/containers/podman-compose).
+
+```shell
+git clone git@github.com:Opmantek/open-audit.git open-audit
+cd open-audit
+chmod +x ./podman-setup.sh
+./podman-setup.sh
+```
+
+This builds the images, starts the containers, waits for the database, and installs Composer dependencies in one step. Open-AudIT is then available at **http://localhost:8087/index.php** (default login: `admin` / `password`).
+
+```shell
+./podman-setup.sh stop    # stop containers
+./podman-setup.sh start   # restart already-built containers
+./podman-setup.sh logs    # tail logs
+./podman-setup.sh shell   # bash shell in web container
+```
+
+Docker users can substitute `docker-compose` for `podman-compose` — the `compose.yml` is compatible with both.
+
+For systemd-native deployment using Podman Quadlets (no `podman-compose` at runtime), see [CONTAINER.md](CONTAINER.md).

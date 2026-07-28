@@ -1,0 +1,25 @@
+[Unit]
+Description=Open-AudIT Web
+After=open-audit-database.service
+Requires=open-audit-database.service
+
+[Container]
+Image=opmantek/open-audit-community-web:latest
+ContainerName=open-audit-community-web
+Environment=app_baseURL=http://localhost:8087
+Environment=database_default_hostname=open-audit-community-database
+Environment=database_default_database=openaudit
+Environment=database_default_username=openaudit
+Environment=database_default_password=openauditpassword
+Environment=database_default_port=3306
+Environment=database_default_DBDriver=MySQLi
+# Replace /path/to/open-audit with the absolute path to your clone of this repo.
+Volume=/path/to/open-audit:/usr/local/open-audit:rw,z
+PublishPort=8087:80
+Network=open-audit.network
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
