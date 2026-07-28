@@ -27,8 +27,14 @@ podman exec -it open-audit-community-test-web composer test:unit
 # Integration tests (requires database container)
 podman exec -it open-audit-community-test-web composer test:integration
 
-# All tests
+# All PHP tests
 podman exec -it open-audit-community-test-web composer test
+
+# Playwright acceptance tests (dev stack must be running)
+cd tests/playwright
+npm install
+npx playwright install chromium
+npx playwright test
 ```
 
 See `tests/TESTING.md` for details.

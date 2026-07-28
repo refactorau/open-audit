@@ -43,6 +43,22 @@ services:
       - open-audit-community-test
     depends_on:
       - database
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.47.0-jammy
+    container_name: open-audit-community-playwright
+    volumes:
+      - ./../tests/playwright:/home/pwuser/tests:z
+    working_dir: /home/pwuser/tests
+    networks:
+      - open-audit-community-test
+    depends_on:
+      - web
+    environment:
+      BASE_URL: http://web
+      HOME: /home/pwuser
+    command: sh -c "npm ci && npx playwright test"
+    profiles:
+      - playwright
 volumes:
   database_storage:
 networks:
