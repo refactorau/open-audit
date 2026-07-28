@@ -20,6 +20,13 @@
     </testsuites>
 
     <coverage ignoreDeprecatedCodeUnits="true" disableCodeCoverageIgnore="true">
+        <include>
+            <directory suffix=".php">./app</directory>
+        </include>
+        <exclude>
+            <directory suffix=".php">./app/Views</directory>
+            <file>./app/Config/Routes.php</file>
+        </exclude>
         <report>
             <clover outputFile="build/logs/clover.xml"/>
             <html outputDirectory="build/logs/html"/>
@@ -34,18 +41,6 @@
         <junit outputFile="build/logs/logfile.xml"/>
     </logging>
 
-    <!--
-    <source>
-        <include>
-            <directory suffix=".php">./app</directory>
-        </include>
-        <exclude>
-            <directory suffix=".php">./app/Views</directory>
-            <file>./app/Config/Routes.php</file>
-        </exclude>
-    </source>
-    -->
-
     <php>
         <server name="app.baseURL" value="http://example.com/"/>
         <server name="CODEIGNITER_SCREAM_DEPRECATIONS" value="0"/>
@@ -55,14 +50,16 @@
         <const name="CONFIGPATH" value="./app/Config/"/>
         <!-- Directory containing the front controller (index.php) -->
         <const name="PUBLICPATH" value="./public/"/>
-        <!-- Database configuration -->
-        <!-- Uncomment to provide your own database for testing
-            <env name="database.tests.hostname" value="localhost"/>
-            <env name="database.tests.database" value="tests"/>
-            <env name="database.tests.username" value="tests_user"/>
-            <env name="database.tests.password" value=""/>
-            <env name="database.tests.DBDriver" value="MySQLi"/>
-            <env name="database.tests.DBPrefix" value="tests_"/>
-            -->
+        <!-- Database configuration for integration tests.
+             When running via tests/compose.yml these are supplied as container
+             env vars (database_tests_*) and override the values below.
+             For ad-hoc runs inside open-audit-community-web, set these to match
+             the running database container. -->
+        <env name="database.tests.hostname" value="open-audit-community-database"/>
+        <env name="database.tests.database" value="openaudit"/>
+        <env name="database.tests.username" value="openaudit"/>
+        <env name="database.tests.password" value="openauditpassword"/>
+        <env name="database.tests.DBDriver" value="MySQLi"/>
+        <env name="database.tests.DBPrefix" value=""/>
     </php>
 </phpunit>

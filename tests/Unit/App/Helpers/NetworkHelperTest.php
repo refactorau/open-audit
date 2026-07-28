@@ -1,25 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OpenAuditTest\Unit\App\Helpers;
 
 use CodeIgniter\Test\CIUnitTestCase;
-use CodeIgniter\Test\ControllerTestTrait;
-use CodeIgniter\Test\DatabaseTestTrait;
 
 final class NetworkHelperTest extends CIUnitTestCase
 {
-    use DatabaseTestTrait;
-    use ControllerTestTrait;
-
     protected function setUp(): void
     {
         parent::setUp();
 
         helper('network');
         helper('utility');
-
-        global $CI_INSTANCE;
-        $CI_INSTANCE[0] = &$this;
     }
 
     /**
@@ -112,11 +106,24 @@ final class NetworkHelperTest extends CIUnitTestCase
         $this->assertNotSame('127.0.0.1', server_ip());
     }
 
-    public function checkIp(): void
+    /**
+     * @dataProvider checkIpDataProvider
+     */
+    public function testCheckIp(bool $expected, string $ip): void
     {
-        $this->assertTrue(check_ip('127.0.0.1'));
-        $this->assertTrue(check_ip('::1'));
-        $this->assertTrue(check_ip('2001:db8:0:0:0:ff00:42:8329'));
-        $this->assertTrue(check_ip('foobar:8329')); // Probably not an expected outcome
+        $this->assertSame($expected, check_ip($ip));
+    }
+
+    public static function checkIpDataProvider(): array
+    {
+        return [
+            // Loopback and valid IPv6 return true without a DB lookup
+            [true,  '127.0.0.1'],
+            [true,  '::1'],
+            [true,  '2001:db8:0:0:0:ff00:42:8329'],
+            // Not a valid IPv4 or IPv6 address
+            [false, 'foobar:8329'],
+            [false, ''],
+        ];
     }
 }
