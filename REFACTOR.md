@@ -15,9 +15,9 @@ The fork focuses on two things the upstream project doesn't yet prioritise:
 
 - `compose.yml` — standard Compose file that works with `podman compose` as well as Docker Compose.
 - `podman-setup.sh` — one-shot script that installs and configures the full stack (database + web) as rootless Podman containers managed by systemd.
-- `.config/containers/systemd/` — Quadlet unit files so `systemctl --user start open-audit` is all that's needed after initial setup.
+- `.compose/quadlets/` — Quadlet unit files for systemd-native deployment (no `podman-compose` at runtime).
 
-See the [Podman setup guide](#podman-quick-start) below.
+See the [Podman quick start](#podman-quick-start) and [systemd / Quadlets](#systemd--quadlets) sections below.
 
 ### Automated testing
 
@@ -46,30 +46,112 @@ npx playwright test
 - Podman ≥ 4.4 and `podman-compose` (or Docker Compose v2)
 - Linux (tested on Ubuntu 22.04+) or WSL2
 
-### Start the stack
+### 1. Clone and run the setup script
+
+The script sets directory permissions, builds images, starts the containers, waits for the database, and installs Composer dependencies in one step.
 
 ```bash
-# First time — build images and start containers
-podman compose up -d --build
-
-# Subsequent starts
-podman compose up -d
+git clone git@github.com:refactorau/open-audit.git open-audit
+cd open-audit
+chmod +x ./podman-setup.sh
+./podman-setup.sh
 ```
 
-The web UI is available at <http://localhost:8087>.
+The web UI is then available at <http://localhost:8087/index.php>.
 Default credentials: **admin / password**
 
-### Systemd integration (optional, for auto-start on login)
+### Additional commands
 
 ```bash
-bash podman-setup.sh
-systemctl --user enable --now open-audit
+./podman-setup.sh start   # start already-built containers
+./podman-setup.sh stop    # stop and remove containers
+./podman-setup.sh logs    # tail logs from all containers
+./podman-setup.sh shell   # open a bash shell in the web container
 ```
 
-### Stop the stack
+> Docker users can substitute `docker-compose` for `podman-compose` — the `compose.yml` is compatible with both.
+
+### Optional: Xdebug
+
+Create a custom PHP INI file before running the setup script:
 
 ```bash
-podman compose down
+cat > ./.compose/web/php/ini/development.ini << EOF
+zend_extension=xdebug.so
+xdebug.mode=debug,coverage
+xdebug.client_host=host.containers.internal
+xdebug.client_port=9003
+xdebug.idekey=PHPSTORM
+EOF
+```
+
+---
+
+## Systemd / Quadlets
+
+Quadlets are Podman's native systemd integration (Podman ≥ 4.4). No `podman-compose` is needed at runtime; systemd manages container lifecycle, restart on failure, and boot start.
+
+### 1. Build the images and install dependencies
+
+```bash
+./podman-setup.sh
+./podman-setup.sh stop    # stop compose-managed containers before handing off to systemd
+```
+
+### 2. Edit the web container unit
+
+Open `.compose/quadlets/open-audit-web.container` and replace `/path/to/open-audit` with the absolute path to your clone:
+
+```ini
+Volume=/home/youruser/open-audit:/usr/local/open-audit:rw,z
+```
+
+### 3. Install the Quadlet files
+
+**Rootless (recommended):**
+
+```bash
+mkdir -p ~/.config/containers/systemd
+cp .compose/quadlets/* ~/.config/containers/systemd/
+systemctl --user daemon-reload
+```
+
+**Root:**
+
+```bash
+cp .compose/quadlets/* /etc/containers/systemd/
+systemctl daemon-reload
+```
+
+### 4. Start the services
+
+```bash
+# Rootless
+systemctl --user start open-audit-web.service
+
+# Root
+systemctl start open-audit-web.service
+```
+
+`open-audit-database.service` starts automatically as a dependency.
+
+### 5. Enable on boot (optional)
+
+```bash
+# Rootless — also enable lingering so services start before login
+systemctl --user enable open-audit-web.service
+loginctl enable-linger "$USER"
+
+# Root
+systemctl enable open-audit-web.service
+```
+
+### Useful systemd commands
+
+```bash
+systemctl --user status open-audit-web.service
+journalctl --user -u open-audit-web.service -f
+systemctl --user stop open-audit-web.service
 ```
 
 ---
