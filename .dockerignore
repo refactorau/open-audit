@@ -1,0 +1,7 @@
+writable/session/
+writable/logs/
+writable/cache/
+writable/debugbar/
+tests/playwright/node_modules/
+tests/playwright/playwright-report/
+tests/playwright/test-results/
